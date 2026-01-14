@@ -92,7 +92,6 @@
       function togglePassword() {
         const passInput = document.getElementById("password");
         const showCheckBox = document.getElementById("showPass");
-        // 如果勾选，类型变为 text（可见），否则为 password（隐藏）
         passInput.type = showCheckBox.checked ? "text" : "password";
       }
 
@@ -108,39 +107,51 @@
         }
       };
 
-      // 3. 登录处理函数
+      // 3. 【核心修改】登录处理函数
       async function handleLogin() {
         const user = document.getElementById("username").value;
         const pass = document.getElementById("password").value;
+        const remember = document.getElementById("remember").checked;
 
+        // --- A. 演示模式逻辑：如果是 admin 直接本地跳转 ---
+        // 这样做可以绕过云端没有后端 API 的问题
+        if (user === "admin") {
+          if (remember) {
+            localStorage.setItem("rememberedUser", user);
+            localStorage.setItem("rememberedPass", pass);
+          } else {
+            localStorage.removeItem("rememberedUser");
+            localStorage.removeItem("rememberedPass");
+          }
+
+          alert("登录成功！正在进入后台...");
+          window.location.href = "dashboard.html";
+          return; // 成功跳转后直接结束，不执行下面的 fetch
+        }
+
+        // --- B. 真实请求逻辑：针对本地 node server.js 测试 ---
         try {
-          // 尝试请求后端
-          const response = await fetch("/api/login", {
-            // 修改为相对路径或你的云端API
+          const response = await fetch("http://localhost:3000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: user, password: pass }),
           });
+
           const data = await response.json();
           if (data.success) {
             window.location.href = "dashboard.html";
+          } else {
+            alert("登录失败: " + data.message);
           }
         } catch (error) {
-          // 【演示逻辑】如果后端没启动（比如在 Vercel 上），我们手动验证
-          console.log("检测到后端未连接，启动演示模式验证");
-
-          // 只要用户名是 admin，就允许跳转（方便你给别人展示）
-          if (user === "admin") {
-            alert("登录成功 (演示模式)！");
-            window.location.href = "dashboard.html";
-          } else {
-            alert("演示模式请使用账号: admin");
-          }
+          // 如果请求失败（云端常态），提示用户使用 admin
+          console.log("后端未连接，请使用演示账号 admin");
+          alert("本地服务器未启动，请使用演示账号: admin");
         }
       }
 
       function forgotPassword() {
-        alert("请查看服务器控制台(Terminal)打印的随机密码。");
+        alert("演示模式账号为 admin，本地模式请查看 VS Code 终端。");
       }
     </script>
   </body>
