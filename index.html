@@ -72,18 +72,15 @@
     <div class="login-box">
       <div class="logo"><strong>iKuai</strong><span>| 企业版</span></div>
       <input type="text" id="username" placeholder="用户名" />
-
       <input type="password" id="password" placeholder="密码" />
-
       <div class="options">
         <label><input type="checkbox" id="remember" /> 记住密码</label>
         <label
           ><input type="checkbox" id="showPass" onclick="togglePassword()" />
           显示密码</label
         >
-        <a onclick="forgotPassword()">忘记密码</a>
+        <a onclick="alert('请使用admin账号登录')">忘记密码</a>
       </div>
-
       <button onclick="handleLogin()">登录</button>
     </div>
 
@@ -96,41 +93,39 @@
 
       window.onload = () => {
         const savedUser = localStorage.getItem("rememberedUser");
-        const savedPass = localStorage.getItem("rememberedPass");
-        if (savedUser && savedPass) {
+        if (savedUser) {
           document.getElementById("username").value = savedUser;
-          document.getElementById("password").value = savedPass;
           document.getElementById("remember").checked = true;
         }
       };
 
       function handleLogin() {
         const user = document.getElementById("username").value;
-        const pass = document.getElementById("password").value;
         const remember = document.getElementById("remember").checked;
 
-        // --- 终极强制跳转逻辑 ---
         if (user === "admin") {
           if (remember) {
             localStorage.setItem("rememberedUser", user);
-            localStorage.setItem("rememberedPass", pass);
           } else {
             localStorage.removeItem("rememberedUser");
-            localStorage.removeItem("rememberedPass");
           }
 
-          // 不再使用 alert（防止某些浏览器在弹出窗口时挂起线程）
-          // 直接使用 URL 对象构建绝对路径，强制浏览器刷新页面
-          const target = new URL("/dashboard.html", window.location.origin);
-          console.log("正在重定向至:", target.href);
+          // 核心逻辑：获取当前根目录，强制拼装绝对路径
+          const targetPath = window.location.origin + "/dashboard.html";
 
-          // 强制重定向
-          window.location.assign(target.href);
-          return;
+          // 打印日志方便调试
+          console.log("正在尝试跳转到: " + targetPath);
+
+          // 1. 尝试直接赋值
+          window.location.href = targetPath;
+
+          // 2. 兜底：如果0.3秒还没跳，强制重定向
+          setTimeout(() => {
+            window.location.replace(targetPath);
+          }, 300);
+        } else {
+          alert("演示模式请使用账号: admin");
         }
-
-        // 本地测试逻辑（如果需要）
-        alert("演示模式请使用账号: admin");
       }
     </script>
   </body>
