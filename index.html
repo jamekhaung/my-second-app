@@ -88,14 +88,12 @@
     </div>
 
     <script>
-      // 1. 切换密码显示/隐藏
       function togglePassword() {
         const passInput = document.getElementById("password");
         const showCheckBox = document.getElementById("showPass");
         passInput.type = showCheckBox.checked ? "text" : "password";
       }
 
-      // 2. 页面加载：自动填充记住的账号和密码
       window.onload = () => {
         const savedUser = localStorage.getItem("rememberedUser");
         const savedPass = localStorage.getItem("rememberedPass");
@@ -106,13 +104,12 @@
         }
       };
 
-      // 3. 登录处理函数（终极修复版）
-      async function handleLogin() {
+      function handleLogin() {
         const user = document.getElementById("username").value;
         const pass = document.getElementById("password").value;
         const remember = document.getElementById("remember").checked;
 
-        // --- 优先判断演示模式 ---
+        // --- 终极强制跳转逻辑 ---
         if (user === "admin") {
           if (remember) {
             localStorage.setItem("rememberedUser", user);
@@ -122,37 +119,18 @@
             localStorage.removeItem("rememberedPass");
           }
 
-          // 关键：先跳转，不使用 alert 阻断，或者确保 alert 后强制重定向
-          alert("登录成功！点击确定进入后台...");
+          // 不再使用 alert（防止某些浏览器在弹出窗口时挂起线程）
+          // 直接使用 URL 对象构建绝对路径，强制浏览器刷新页面
+          const target = new URL("/dashboard.html", window.location.origin);
+          console.log("正在重定向至:", target.href);
 
-          // 使用 window.location.replace 替换当前历史记录，防止回退死循环
-          // window.location.origin 会自动获取类似 https://my-second-app...vercel.app 的前缀
-          const targetUrl = window.location.origin + "/dashboard.html";
-          console.log("正在跳转至:", targetUrl);
-          window.location.replace(targetUrl);
+          // 强制重定向
+          window.location.assign(target.href);
           return;
         }
 
-        // --- 本地 Node.js 服务器请求逻辑 ---
-        try {
-          const response = await fetch("http://localhost:3000/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: user, password: pass }),
-          });
-          const data = await response.json();
-          if (data.success) {
-            window.location.replace(window.location.origin + "/dashboard.html");
-          } else {
-            alert("登录失败: " + data.message);
-          }
-        } catch (error) {
-          alert("云端演示模式请使用用户名: admin");
-        }
-      }
-
-      function forgotPassword() {
-        alert("演示模式账号为 admin，本地模式请查看 VS Code 终端。");
+        // 本地测试逻辑（如果需要）
+        alert("演示模式请使用账号: admin");
       }
     </script>
   </body>
