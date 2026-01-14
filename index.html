@@ -112,34 +112,30 @@
       async function handleLogin() {
         const user = document.getElementById("username").value;
         const pass = document.getElementById("password").value;
-        const remember = document.getElementById("remember").checked;
 
         try {
-          const response = await fetch("http://localhost:3000/login", {
+          // 尝试请求后端
+          const response = await fetch("/api/login", {
+            // 修改为相对路径或你的云端API
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: user, password: pass }),
           });
-
           const data = await response.json();
-
           if (data.success) {
-            // 记住密码逻辑：保存到浏览器本地存储 (localStorage)
-            if (remember) {
-              localStorage.setItem("rememberedUser", user);
-              localStorage.setItem("rememberedPass", pass);
-            } else {
-              localStorage.removeItem("rememberedUser");
-              localStorage.removeItem("rememberedPass");
-            }
-
-            alert("登录成功！");
             window.location.href = "dashboard.html";
-          } else {
-            alert("失败：" + data.message);
           }
         } catch (error) {
-          alert("无法连接服务器，请确保后端 node server.js 正在运行");
+          // 【演示逻辑】如果后端没启动（比如在 Vercel 上），我们手动验证
+          console.log("检测到后端未连接，启动演示模式验证");
+
+          // 只要用户名是 admin，就允许跳转（方便你给别人展示）
+          if (user === "admin") {
+            alert("登录成功 (演示模式)！");
+            window.location.href = "dashboard.html";
+          } else {
+            alert("演示模式请使用账号: admin");
+          }
         }
       }
 
