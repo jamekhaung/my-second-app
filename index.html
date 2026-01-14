@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>iKuai | 企业版登录</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #0a0a0a;
+        font-family: "Microsoft YaHei", sans-serif;
+        background-image: radial-gradient(circle, #222 1px, transparent 1px);
+        background-size: 25px 25px;
+      }
+      .login-box {
+        width: 350px;
+        text-align: center;
+        color: #ccc;
+      }
+      .logo {
+        font-size: 28px;
+        margin-bottom: 30px;
+        color: #fff;
+      }
+      .logo span {
+        font-weight: 100;
+        color: #888;
+        margin-left: 10px;
+        font-size: 18px;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border: 1px solid #333;
+        background: #2a2a2a;
+        color: white;
+        box-sizing: border-box;
+        outline: none;
+      }
+      .options {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        margin: 10px 0;
+      }
+      .options a {
+        color: #888;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        background-color: #3e8e75;
+        color: white;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #4aad8d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-box">
+      <div class="logo"><strong>iKuai</strong><span>| 企业版</span></div>
+      <input type="text" id="username" placeholder="用户名" />
+
+      <input type="password" id="password" placeholder="密码" />
+
+      <div class="options">
+        <label><input type="checkbox" id="remember" /> 记住密码</label>
+        <label
+          ><input type="checkbox" id="showPass" onclick="togglePassword()" />
+          显示密码</label
+        >
+        <a onclick="forgotPassword()">忘记密码</a>
+      </div>
+
+      <button onclick="handleLogin()">登录</button>
+    </div>
+
+    <script>
+      // 1. 切换密码显示/隐藏
+      function togglePassword() {
+        const passInput = document.getElementById("password");
+        const showCheckBox = document.getElementById("showPass");
+        // 如果勾选，类型变为 text（可见），否则为 password（隐藏）
+        passInput.type = showCheckBox.checked ? "text" : "password";
+      }
+
+      // 2. 页面加载：自动填充记住的账号和密码
+      window.onload = () => {
+        const savedUser = localStorage.getItem("rememberedUser");
+        const savedPass = localStorage.getItem("rememberedPass");
+
+        if (savedUser && savedPass) {
+          document.getElementById("username").value = savedUser;
+          document.getElementById("password").value = savedPass;
+          document.getElementById("remember").checked = true;
+        }
+      };
+
+      // 3. 登录处理函数
+      async function handleLogin() {
+        const user = document.getElementById("username").value;
+        const pass = document.getElementById("password").value;
+        const remember = document.getElementById("remember").checked;
+
+        try {
+          const response = await fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: user, password: pass }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // 记住密码逻辑：保存到浏览器本地存储 (localStorage)
+            if (remember) {
+              localStorage.setItem("rememberedUser", user);
+              localStorage.setItem("rememberedPass", pass);
+            } else {
+              localStorage.removeItem("rememberedUser");
+              localStorage.removeItem("rememberedPass");
+            }
+
+            alert("登录成功！");
+            window.location.href = "dashboard.html";
+          } else {
+            alert("失败：" + data.message);
+          }
+        } catch (error) {
+          alert("无法连接服务器，请确保后端 node server.js 正在运行");
+        }
+      }
+
+      function forgotPassword() {
+        alert("请查看服务器控制台(Terminal)打印的随机密码。");
+      }
+    </script>
+  </body>
+</html>
